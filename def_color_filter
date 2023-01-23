@@ -1,0 +1,142 @@
+import cv2
+import numpy as np
+from os import listdir
+from os.path import join
+
+#here we filter by color images downloaded in def_lon_lat.py
+#road
+def po_cesti(slika):
+    img = cv2.imread(slika)
+
+    donja = np.array([0,0,0])
+    gornja = np.array([50,50,50])
+
+    ceste = cv2.inRange(img, donja, gornja)
+    #print(ceste.shape)
+    #print(type(ceste))
+    #print(ceste)
+    #proba = ceste.sort()
+    #print(proba)    
+    ret, ceste_bin = cv2.threshold(ceste, 150, 1,cv2.THRESH_BINARY)
+    #print(ceste_bin)
+
+    #cv2.imshow('po_cesti', ceste_bin)
+    #cv2.imshow('po_cesti', ceste)
+    cv2.imwrite('./tmp/po_cesti.jpg', ceste)
+    
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    return ceste
+
+#houses
+def po_kucama(slika):
+    img = cv2.imread(slika)
+
+    donja = np.array([105,105,105])
+    gornja = np.array([115,115,115])
+
+    buildings = cv2.inRange(img, donja, gornja)
+
+    ret, buildings_bin = cv2.threshold(buildings, 150, 1,cv2.THRESH_BINARY)
+
+    #gauss =  cv2.GaussianBlur(buildings, (3,3), 0)
+
+    #cv2.imshow('po_kucama', buildings_bin)
+    cv2.imwrite('./tmp/po_kucama.jpg', buildings_bin)
+    
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    return buildings
+    
+#water
+def po_vodi(slika):
+    img = cv2.imread(slika)
+    #slikaHSV = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+    donja = np.array([198,49,49])
+    gornja = np.array([220,55,55])
+
+    voda = cv2.inRange(img, donja, gornja)
+
+    ret, voda_bin = cv2.threshold(voda, 150, 1,cv2.THRESH_BINARY)
+
+    #cv2.imshow('po_vodi', voda_bin)
+    cv2.imwrite('./tmp/po_vodi.jpg', voda_bin)
+    
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    return voda
+    
+#pedestrian_walkways
+def po_pjesaku(slika):
+    img = cv2.imread(slika)
+
+    donja = np.array([0,0,200])
+    gornja = np.array([100,100,255])
+
+    pehe = cv2.inRange(img, donja, gornja)
+
+    ret, pehe_bin = cv2.threshold(pehe, 150, 1,cv2.THRESH_BINARY)
+
+    #inv_mask = cv2.bitwise_not(pehe)
+    #no_sky = cv2.bitwise_and(img,img, mask=inv_mask)
+    #kernel = np.ones((5,5),np.uint8)
+    #dilation = cv2.dilate(mask,kernel,iterations = 1)
+    #gradient = cv2.morphologyEx(mask, cv2.MORPH_GRADIENT, kernel)
+
+    #cv2.imshow('po_pjesaku', pehe_bin)
+    cv2.imwrite('./tmp/po_pjesaku.jpg', pehe_bin)
+    
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    return pehe
+
+#nature
+def po_prirodi(slika):
+    img = cv2.imread(slika)
+
+    donja = np.array([100,150,100])
+    gornja = np.array([105,155,105])
+    kernel = np.ones((3,3),np.uint8)
+
+    priroda = cv2.inRange(img, donja, gornja)
+    inv_priroda = cv2.bitwise_not(priroda)
+    #gradient = cv2.morphologyEx(inv_priroda, cv2.MORPH_GRADIENT, kernel)
+
+    ret, priroda_bin = cv2.threshold(priroda, 150, 1,cv2.THRESH_BINARY)
+
+
+    #print(inv_priroda.shape)
+    
+    #cv2.imshow('po_prirodi', priroda_bin)
+    cv2.imwrite('./tmp/po_prirodi.jpg', priroda_bin)
+    
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    return priroda
+
+
+
+def do_tile(slika):
+    return np.array([po_kucama(slika), po_cesti(slika), po_vodi(slika), po_pjesaku(slika), po_prirodi(slika)])
+
+def do_city(folder):
+    return np.sum(np.array([do_tile(join(folder, slika)) for slika in listdir(folder)]), axis=0)
+
+'''
+po_cesti('ned_1024x1024.png')
+#print(ceste)
+po_kucama('ned_1024x1024.png')
+#print(buildings)
+po_vodi('1024x1024.png')
+#print(voda)
+po_pjesaku('ned_1024x1024.png')
+#print(pehe)
+po_prirodi('ned_1024x1024.png')
+#print(inv_mask)
+'''
